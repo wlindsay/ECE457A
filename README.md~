@@ -1,4 +1,4 @@
-tictactoeAlphaBeta - Builds the game tree at every decision using alpha beta
+tictactoeAlphaBeta - Builds the game tree at every decision
 
 tictactoeMinMax - Builds the game tree at every decision like the alpha beta prunning
 

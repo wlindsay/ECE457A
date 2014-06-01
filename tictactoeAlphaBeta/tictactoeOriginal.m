@@ -44,50 +44,6 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-function buildGameTree(parentNode, turn)
-[win] = checkboard(parentNode.board);
-filledSquares = 0;
-
-if win == 0
-    for i = 1:9
-        if parentNode.board(i) == 0
-            [next] = parentNode.insert(i, turn);
-            buildGameTree(next, mod((turn), 2) + 1);
-        else
-            filledSquares = filledSquares + 1;
-        end
-    end
-else
-    if win == 1
-       parentNode.min = -1;
-       parentNode.max = -1;
-    else
-       parentNode.min = 1;
-       parentNode.max = 1;
-    end
-end
-
-if win == 0 && filledSquares ~= 9
-    % All children are computed at this point -> can find their min max values
-    min = 10;
-    max = -10;
-
-    for i = 1:9
-        if parentNode.board(i) == 0
-            node = parentNode.Next(i);
-            if node.min > max
-                max = node.min;
-            end
-            if node.max < min
-                min = node.max;
-            end
-        end
-    end
-
-    parentNode.min = min;
-    parentNode.max = max;
-end
-
 
 % --- Executes just before tictactoe is made visible.
 function tictactoe_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -234,7 +190,6 @@ else
 end
 
 function picksquare(handles,num)
-
 turn=getappdata(gcbf,'turn');
 avsq=getappdata(gcbf,'avsq');
 avsq(avsq==num)=[];
@@ -305,7 +260,6 @@ function newgame_Callback(hObject, eventdata, handles)
 % hObject    handle to newgame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 for i=1:9
     set(eval(['handles.pushbutton' int2str(i)]),'Enable','on');
     set(eval(['handles.pushbutton' int2str(i)]),'String','');
@@ -326,17 +280,46 @@ if turn==2
 end
 
 function decision(handles)
-disp('Moving... may take a while if O is starting');
-board = getappdata(gcbf, 'board');
-startNode = binaryTreeNode(board);
-buildGameTree(startNode, 2);
-disp('Done moving');
+avsq=getappdata(gcbf,'avsq');
+board=getappdata(gcbf,'board');
+num=0;
+i=1;
+j=2;
+pause(0.5);
 
-for i = 1:9
-    if startNode.board(i) == 0 && startNode.Next(i).min == startNode.max
-       num = i;
-       break;
+%try to win, if u can't try to block
+while num==0
+    if i==1     
+    	s=[1 2 3];
+    elseif i==2
+    	s=[4 5 6];
+    elseif i==3
+    	s=[7 8 9];
+    elseif i==4
+    	s=[1 4 7];
+    elseif i==5
+    	s=[2 5 8];
+    elseif i==6
+    	s=[3 6 9];
+    elseif i==7
+    	s=[1 5 9];
+    elseif i==8
+    	s=[3 5 7];
+    elseif i==9 && j==2
+        j=1;
+        i=1;
+    elseif i==9 && j==1
+        num=avsq(ceil(rand*(length(avsq)))); %pick any sq if everything fails
     end
+	
+	if board(s(1))==j && board(s(2))==j && board(s(3))==0
+        num=s(3);
+	elseif board(s(1))==j && board(s(2))==0 && board(s(3))==j
+        num=s(2);
+	elseif board(s(1))==0 && board(s(2))==j && board(s(3))==j
+        num=s(1);
+	end
+    i=i+1;
 end
 
 picksquare(handles,num);

@@ -1,4 +1,3 @@
-
 function varargout = tictactoe(varargin)
 % TICTACTOE M-file for tictactoe.fig
 %      TICTACTOE, by itself, creates a new TICTACTOE or raises the existing
@@ -59,43 +58,66 @@ if win == 0
     end
 else
     if win == 1
-       parentNode.min = -1;
-       parentNode.max = -1;
+       parentNode.min1 = 1;
+       parentNode.max1 = 1;
+       parentNode.min2 = -1;
+       parentNode.max2 = -1;
     else
-       parentNode.min = 1;
-       parentNode.max = 1;
+       parentNode.min1 = -1;
+       parentNode.max1 = -1;
+       parentNode.min2 = 1;
+       parentNode.max2 = 1;
     end
 end
 
 if win == 0 && filledSquares ~= 9
     % All children are computed at this point -> can find their min max values
-    min = 10;
-    max = -10;
+    min1 = 10;
+    max1 = -10;
+    min2 = 10;
+    max2 = -10;
 
     for i = 1:9
         if parentNode.board(i) == 0
             node = parentNode.Next(i);
-            if node.min > max
-                max = node.min;
+            if node.min1 > max1
+                max1 = node.min1;
             end
-            if node.max < min
-                min = node.max;
+            if node.max1 < min1
+                min1 = node.max1;
+            end
+            if node.min2 > max2
+                max2 = node.min2;
+            end
+            if node.max2 < min2
+                min2 = node.max2;
             end
         end
     end
 
-    parentNode.min = min;
-    parentNode.max = max;
+    parentNode.min1 = min1;
+    parentNode.max1 = max1;
+    parentNode.min2 = min2;
+    parentNode.max2 = max2;
 end
 
 
 % --- Executes just before tictactoe is made visible.
 function tictactoe_OpeningFcn(hObject, eventdata, handles, varargin)
+global state
+global startingNode
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to tictactoe (see VARARGIN)
+
+% Set up MinMax tree - build dynamically - data is of type [turn(1 or 2) posMove([x y]) min max]
+disp('start building game tree');
+state = binaryTreeNode(); % starting node
+startingNode = state;
+buildGameTree(state, 1);
+disp('done building game tree');
 
 % Choose default command line output for tictactoe
 handles.output = hObject;
@@ -234,6 +256,7 @@ else
 end
 
 function picksquare(handles,num)
+global state
 
 turn=getappdata(gcbf,'turn');
 avsq=getappdata(gcbf,'avsq');
@@ -253,6 +276,9 @@ end
 setappdata(gcbf,'turn',turn);
 setappdata(gcbf,'board',board);
 [win]=checkboard(board);
+
+% Move down the min max tree
+state = state.Next(num);
 
 if win~=0
     for i=1:9
@@ -302,9 +328,12 @@ end
 
 % --- Executes on button press in newgame.
 function newgame_Callback(hObject, eventdata, handles)
+global startingNode
+global state
 % hObject    handle to newgame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+state = startingNode;
 
 for i=1:9
     set(eval(['handles.pushbutton' int2str(i)]),'Enable','on');
@@ -316,6 +345,7 @@ if turn==1
 elseif turn==2
     set(handles.dispturn,'String','O Turn');
 end
+setappdata(gcbf, 'started', turn);
 setappdata(gcbf,'turn',turn);
 board=zeros(1,9);
 setappdata(gcbf,'board',board);
@@ -326,16 +356,22 @@ if turn==2
 end
 
 function decision(handles)
-disp('Moving... may take a while if O is starting');
-board = getappdata(gcbf, 'board');
-startNode = binaryTreeNode(board);
-buildGameTree(startNode, 2);
-disp('Done moving');
+global state
+started = getappdata(gcbf,'started');
 
-for i = 1:9
-    if startNode.board(i) == 0 && startNode.Next(i).min == startNode.max
-       num = i;
-       break;
+if started == 1 % X started and this means that O is 2 in the game tree
+    for i = 1:9
+        if state.board(i) == 0 && state.Next(i).min2 == state.max2
+           num = i;
+           break;
+        end
+    end
+elseif started == 2 % O started and this means that O is 1 in the game tree
+    for i = 1:9
+        if state.board(i) == 0 && state.Next(i).min1 == state.max1
+           num = i;
+           break;
+        end
     end
 end
 
