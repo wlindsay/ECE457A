@@ -359,17 +359,9 @@ end
 function decision(handles)
 global state
 started = getappdata(gcbf,'started');
-disp('started');
-disp(started);
-disp('state max1');
-disp(state.max1);
-disp('state max2');
-disp(state.max2);
 
 if started == 1 % X started and this means that O is 2 in the game tree
     for i = 1:9
-        disp('state next min2');
-        disp(state.Next(i).min2);
         if state.board(i) == 0 && state.Next(i).min2 == state.max2
            num = i;
            break;
@@ -377,8 +369,6 @@ if started == 1 % X started and this means that O is 2 in the game tree
     end
 elseif started == 2 % O started and this means that O is 1 in the game tree
     for i = 1:9
-        disp('state next min1');
-        disp(state.Next(i).min1);
         if state.board(i) == 0 && state.Next(i).min1 == state.max1
            num = i;
            break;
