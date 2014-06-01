@@ -46,15 +46,18 @@ end
 
 function buildGameTree(parentNode, turn)
 [win] = checkboard(parentNode.board);
-filledSquares = 0;
 
 if win == 0
     for i = 1:9
-        if parentNode.board(i) == 0
+        if parentNode.board(i) == 0 && (parentNode.Prev.empty || (turn == 1 && parentNode.Prev.max < parentNode.min) || (turn == 2 && parentNode.Prev.min > parentNode.max))
             [next] = parentNode.insert(i, turn);
             buildGameTree(next, mod((turn), 2) + 1);
-        else
-            filledSquares = filledSquares + 1;
+            
+            if turn == 1 && parentNode.min > next.max % MIN
+                parentNode.min = next.max;
+            elseif turn == 2 && parentNode.max < next.min % MAX
+                parentNode.max = next.min;
+            end
         end
     end
 else
@@ -65,27 +68,6 @@ else
        parentNode.min = 1;
        parentNode.max = 1;
     end
-end
-
-if win == 0 && filledSquares ~= 9
-    % All children are computed at this point -> can find their min max values
-    min = 10;
-    max = -10;
-
-    for i = 1:9
-        if parentNode.board(i) == 0
-            node = parentNode.Next(i);
-            if node.min > max
-                max = node.min;
-            end
-            if node.max < min
-                min = node.max;
-            end
-        end
-    end
-
-    parentNode.min = min;
-    parentNode.max = max;
 end
 
 

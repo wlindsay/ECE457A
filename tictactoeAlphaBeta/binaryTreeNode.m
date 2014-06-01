@@ -2,8 +2,8 @@ classdef binaryTreeNode < handle
    properties
       Next = [binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty];
       Prev = binaryTreeNode.empty;
-      min = 0;
-      max = 0;
+      min = 10;
+      max = -10;
       board;
    end
    
