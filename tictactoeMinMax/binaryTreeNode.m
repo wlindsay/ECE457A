@@ -1,9 +1,11 @@
 classdef binaryTreeNode < handle
-   properties(SetAccess = private)
+   properties
       Next = [binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty binaryTreeNode.empty];
       Prev = binaryTreeNode.empty;
-      pointsFor1 = 0;
-      pointsFor2 = 0;
+      min1 = 0;
+      min2 = 0;
+      max1 = 0;
+      max2 = 0;
       board = [0 0 0 0 0 0 0 0 0];
    end
    
