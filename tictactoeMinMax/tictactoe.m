@@ -67,7 +67,10 @@ else
     end
 end
 
-if win == 0 && filledSquares ~= 9
+if filledSquares == 9
+    parentNode.min = 0;
+    parentNode.max = 0;
+elseif win == 0
     % All children are computed at this point -> can find their min max values
     min = 10;
     max = -10;
@@ -234,6 +237,7 @@ else
 end
 
 function picksquare(handles,num)
+global state
 
 turn=getappdata(gcbf,'turn');
 avsq=getappdata(gcbf,'avsq');
@@ -253,6 +257,10 @@ end
 setappdata(gcbf,'turn',turn);
 setappdata(gcbf,'board',board);
 [win]=checkboard(board);
+
+if state.min ~= 10
+   state = state.Next(num);
+end
 
 if win~=0
     for i=1:9
@@ -302,6 +310,8 @@ end
 
 % --- Executes on button press in newgame.
 function newgame_Callback(hObject, eventdata, handles)
+global state
+
 % hObject    handle to newgame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -321,19 +331,27 @@ board=zeros(1,9);
 setappdata(gcbf,'board',board);
 avsq=[1:9];
 setappdata(gcbf,'avsq',avsq);
+state = binaryTreeNode(board);
+
 if turn==2
     decision(handles);
 end
 
 function decision(handles)
+global state
+
 disp('Moving... may take a while if O is starting');
 board = getappdata(gcbf, 'board');
-startNode = binaryTreeNode(board);
-buildGameTree(startNode, 2);
+
+% this means that it is a new game and the tree has not been computed
+if state.min == 10
+    state = binaryTreeNode(board);
+    buildGameTree(state, 2);
+end
 disp('Done moving');
 
 for i = 1:9
-    if startNode.board(i) == 0 && startNode.Next(i).min == startNode.max
+    if state.board(i) == 0 && state.Next(i).min == state.max
        num = i;
        break;
     end
