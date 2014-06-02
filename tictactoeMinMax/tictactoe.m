@@ -258,7 +258,7 @@ setappdata(gcbf,'turn',turn);
 setappdata(gcbf,'board',board);
 [win]=checkboard(board);
 
-if state.min ~= 10
+if ~isempty(state)
    state = state.Next(num);
 end
 
@@ -311,7 +311,7 @@ end
 % --- Executes on button press in newgame.
 function newgame_Callback(hObject, eventdata, handles)
 global state
-
+state = binaryTreeNode.empty
 % hObject    handle to newgame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -331,7 +331,6 @@ board=zeros(1,9);
 setappdata(gcbf,'board',board);
 avsq=[1:9];
 setappdata(gcbf,'avsq',avsq);
-state = binaryTreeNode(board);
 
 if turn==2
     decision(handles);
@@ -344,7 +343,7 @@ disp('Moving... may take a while if O is starting');
 board = getappdata(gcbf, 'board');
 
 % this means that it is a new game and the tree has not been computed
-if state.min == 10
+if isempty(state)
     state = binaryTreeNode(board);
     buildGameTree(state, 2);
 end
