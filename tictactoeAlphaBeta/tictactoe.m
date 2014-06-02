@@ -46,18 +46,33 @@ end
 
 function buildGameTree(parentNode, turn)
 [win] = checkboard(parentNode.board);
+filledSquares = 0;
 
 if win == 0
     for i = 1:9
-        if parentNode.board(i) == 0 && (parentNode.Prev.empty || (turn == 1 && parentNode.Prev.max < parentNode.min) || (turn == 2 && parentNode.Prev.min > parentNode.max))
+        % On MIN node if condition met do not explore other children
+        if ~isempty(parentNode.Prev) && turn == 1 && parentNode.Prev.max > parentNode.min
+           break; 
+        end
+        
+        % On MAX node if condition met do not explore other children
+        if ~isempty(parentNode.Prev) && turn == 2 && parentNode.Prev.min < parentNode.max
+            break;
+        end
+        
+        if parentNode.board(i) == 0
             [next] = parentNode.insert(i, turn);
             buildGameTree(next, mod((turn), 2) + 1);
             
-            if turn == 1 && parentNode.min > next.max % MIN
+            if turn == 1 && parentNode.min > next.max
                 parentNode.min = next.max;
-            elseif turn == 2 && parentNode.max < next.min % MAX
+                parentNode.max = next.max;
+            elseif turn == 2 && parentNode.max < next.min
                 parentNode.max = next.min;
+                parentNode.min = next.min;
             end
+        else
+            filledSquares = filledSquares + 1;
         end
     end
 else
@@ -68,6 +83,11 @@ else
        parentNode.min = 1;
        parentNode.max = 1;
     end
+end
+
+if filledSquares == 9
+    parentNode.min = 0;
+    parentNode.max = 0;
 end
 
 
@@ -216,6 +236,7 @@ else
 end
 
 function picksquare(handles,num)
+global state
 
 turn=getappdata(gcbf,'turn');
 avsq=getappdata(gcbf,'avsq');
@@ -235,6 +256,10 @@ end
 setappdata(gcbf,'turn',turn);
 setappdata(gcbf,'board',board);
 [win]=checkboard(board);
+
+if ~isempty(state)
+   state = state.Next(num);
+end
 
 if win~=0
     for i=1:9
@@ -284,6 +309,8 @@ end
 
 % --- Executes on button press in newgame.
 function newgame_Callback(hObject, eventdata, handles)
+global state
+state = binaryTreeNode.empty;
 % hObject    handle to newgame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -303,19 +330,26 @@ board=zeros(1,9);
 setappdata(gcbf,'board',board);
 avsq=[1:9];
 setappdata(gcbf,'avsq',avsq);
+
 if turn==2
     decision(handles);
 end
 
 function decision(handles)
+global state
+
 disp('Moving... may take a while if O is starting');
 board = getappdata(gcbf, 'board');
-startNode = binaryTreeNode(board);
-buildGameTree(startNode, 2);
+
+% this means that it is a new game and the tree has not been computed
+if isempty(state)
+    state = binaryTreeNode(board);
+    buildGameTree(state, 2);
+end
 disp('Done moving');
 
 for i = 1:9
-    if startNode.board(i) == 0 && startNode.Next(i).min == startNode.max
+    if state.board(i) == 0 && state.Next(i).min == state.max
        num = i;
        break;
     end
