@@ -1,5 +1,4 @@
-tictactoeAlphaBeta - Builds the game tree at every decision using alpha beta
+tictactoeAlphaBeta - Builds the game tree only once and moves the state at every decision using alpha beta. Will create a new tree if it enters a branch that was not traversed before.
 
-tictactoeMinMax - Builds the game tree at every decision like the alpha beta prunning
+tictactoeMinMax - Builds the game tree only once and moves the state at every decision like the alpha beta prunning
 
-tictactoeMinMaxBuildingTreeOnlyOnce - Modification to the tictactoeMinMax since it is not necessary to recreate the tree every time, can simply update the state of the game as it goes and read from the already built tree.
